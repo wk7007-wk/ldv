@@ -14,7 +14,12 @@ h1 { text-align: center; font-size: 20px; letter-spacing: 8px; margin-bottom: 25
 .case-label { display: inline-block; width: 70px; letter-spacing: 8px; }
 .note { font-size: 12px; color: #555; margin-bottom: 20px; }
 hr { border: none; border-top: 1px solid #999; margin: 15px 0; }
-.body-text { margin-bottom: 12px; text-align: justify; }
+.opener { margin-bottom: 20px; }
+.item { margin-bottom: 16px; }
+.item-title { font-weight: bold; margin-bottom: 4px; }
+.item-sub { padding-left: 20px; }
+.item-sub p { position: relative; padding-left: 14px; }
+.item-sub p::before { content: "-"; position: absolute; left: 0; }
 .memo-section { margin-top: 30px; padding: 15px; background: #f9f9f9; border: 1px dashed #ccc; font-size: 12px; line-height: 1.8; }
 .memo-section p { margin-bottom: 4px; }
 @media print {
@@ -38,21 +43,69 @@ hr { border: none; border-top: 1px solid #999; margin: 15px 0; }
 
 <hr>
 
-<p class="body-text">재판장님, 저는 이원규입니다.</p>
+<div class="opener">
+  <p>재판장님, 저는 이원규입니다.</p>
+  <p>핵심만 말씀드리겠습니다.</p>
+</div>
 
-<p class="body-text">저는 그날 술에 많이 취해 있었습니다. 엄주현이 만취 상태로 주변 사람들에게 욕설을 퍼붓고, 노래방 도우미를 때리고, 제 오른쪽 뺨도 때렸습니다. 이 일의 시작은 엄주현입니다.</p>
+<div class="item">
+  <p class="item-title">1. 저는 그날 술자리에서 엄주현에게 맞은 단순 피해자입니다.</p>
+  <div class="item-sub">
+    <p>엄주현이 만취 상태로 주변 사람들에게 욕설, 노래방 도우미를 때리고, 제 오른쪽 뺨도 때렸습니다.</p>
+    <p>이 일의 시작은 엄주현입니다.</p>
+  </div>
+</div>
 
-<p class="body-text">저는 엄주현을 밟거나 때린 기억이 없습니다. 맞은 것도 기억 못 할 정도로 취해 있었기 때문에, 화가 나서 보복할 상황이 아니었습니다. 다만 최윤석을 몸으로 막고 싸움을 말리는 과정의 기억은 있습니다. 이후 앉아서 다 같이 얘기하는 중에 엄주현이 "누워있을 때 얍삽하게 때리냐"고 했을 때 저는 억울해서 "나는 너 때린 적 없어"라고 한 기억도 있습니다. 필름이 끊기는 부분은 있어도, 당시의 기억과 행동은 사실입니다. 최윤석도 제 폭행을 못 봤다고 했습니다. 최윤석 조서 8쪽에 의하면 조경호도 현장에서 "못 봤다"고 한 것으로 기록되어 있습니다.</p>
+<div class="item">
+  <p class="item-title">2. 저는 엄주현을 때리거나 밟은 기억이 전혀 없습니다.</p>
+  <div class="item-sub">
+    <p>맞은 것도 기억 못 할 정도로 취해 있었기 때문에 보복할 상황이 아니었습니다.</p>
+    <p>다만 최윤석을 몸으로 막고 싸움을 말리는 기억은 있습니다.</p>
+    <p>엄주현이 "누워있을 때 얍삽하게 때리냐"고 했을 때 "나는 너 때린 적 없어"라고 한 기억도 있습니다.</p>
+    <p>필름이 끊기는 부분은 있어도, 당시의 기억과 행동은 사실입니다.</p>
+  </div>
+</div>
 
-<p class="body-text">조경호 진술조서는 부동의했고, 열람도 안 돼서 뭐가 적혀있는지 모릅니다.</p>
+<div class="item">
+  <p class="item-title">3. 목격한 사람이 없습니다.</p>
+  <div class="item-sub">
+    <p>최윤석도 제 폭행을 못 봤다고 했습니다.</p>
+    <p>최윤석 조서 8쪽에 의하면 조경호도 "못 봤다"고 기록되어 있습니다.</p>
+  </div>
+</div>
 
-<p class="body-text">경찰 조사 때도 문제가 있었습니다. 저는 "때린 것 같다"라고 했습니다. 이것도 제가 기억해서 한 말이 아닙니다. 사건 후에 최윤석이 "조경호가 형이 밟았다고 하더라"고 전해줬습니다. 기억은 없지만 같이 있던 사람들이 그러니까 그런가 싶어서 한 말입니다. '밟았다'고 한 걸 포괄해서 '때린 것 같다'로 말한 겁니다. 그런데 수사관이 "때렸다"라고 쳐서 "인정하는 건 아니다"라고 했더니 "그런 것 같다로 할게요"라고 했습니다. 그 말을 믿고 서명했는데, 최종 조서에는 "인정한다"로 되어 있었습니다.</p>
+<div class="item">
+  <p class="item-title">4. 경찰 조서가 제 말과 다르게 작성되었습니다.</p>
+  <div class="item-sub">
+    <p>수사관이 "그런 것 같다로 할게요"라고 해서 믿고 서명했는데, 최종 조서에는 "인정한다"로 되어 있었습니다.</p>
+    <p>최윤석 조서에도 최윤석이 한 적 없는 말이 적혀 있습니다.</p>
+  </div>
+</div>
 
-<p class="body-text">저는 최윤석과 공모한 적이 없습니다. 오히려 저는 최윤석을 몸으로 말린 쪽이었습니다. 사건 후에 조경호, 최윤석이 계속 만나서 풀자고 해서 제가 직접 엄주현에게 연락해서 만남을 시도했습니다. 통화하면서 제가 맞은 얘기도 꺼내지 않았습니다. 엄주현은 계속 만남을 거부하더니 결국 소송을 걸었습니다. 저는 맞은 기억도 없었는데 다음날 최윤석이 전화로 "형 엄주현한테 싸대기 맞은 거 알아?"라고 해서 그때 알게 됐습니다. 그런데도 문제 삼지 않았습니다. 다친 사람이 있는데 누가 잘못했는지보다 수습이 먼저라고 생각했기 때문입니다.</p>
+<div class="item">
+  <p class="item-title">5. 최윤석과 공모한 적이 없습니다.</p>
+  <div class="item-sub">
+    <p>오히려 저는 몸으로 말린 쪽이었습니다.</p>
+    <p>같이 때리자고 한 사람이 몸으로 말릴 이유가 없습니다.</p>
+  </div>
+</div>
 
-<p class="body-text">그런데 엄주현은 저한테 1,400만 원 민사소송을 걸어놓은 상태입니다. 형사에서 유죄가 나와야 돈을 받을 수 있는 입장이므로, 진술을 과장할 동기가 있다고 생각합니다.</p>
+<div class="item">
+  <p class="item-title">6. 사건 후에 제가 직접 엄주현에게 연락해서 만남을 시도했습니다.</p>
+  <div class="item-sub">
+    <p>저는 맞은 사람인데, 맞은 얘기도 꺼내지 않고 수습하려 했습니다.</p>
+    <p>엄주현은 만남을 거부하고 소송을 걸었습니다.</p>
+  </div>
+</div>
 
-<p class="body-text">저는 무죄를 주장합니다. 감사합니다.</p>
+<div class="item">
+  <p class="item-title">7. 엄주현은 1,400만 원 민사소송을 걸어놓은 상태입니다.</p>
+  <div class="item-sub">
+    <p>형사에서 유죄가 나와야 돈을 받을 수 있는 입장이므로 진술을 과장할 동기가 있습니다.</p>
+  </div>
+</div>
+
+<p style="margin-top: 25px;">저는 무죄를 주장합니다. 감사합니다.</p>
 
 <hr>
 
@@ -62,7 +115,7 @@ hr { border: none; border-top: 1px solid #999; margin: 15px 0; }
   <p>- 판사 질문에는 짧고 명확하게 답변</p>
   <p>- "때린 기억 없다" + "말린 기억은 있다" + "부인한 기억도 있다" 구분</p>
   <p>&nbsp;&nbsp;→ 필름 끊긴 부분과 기억 있는 부분을 명확히</p>
-  <p>- 핵심 순서: ①때린 기억 없다 → ②말린 기억은 있다 + 현장에서 부인 → ③목격자 없음 → ④조서 왜곡 (믿고 서명)</p>
+  <p>- 핵심 순서: ①피해자다 → ②때린 기억 없다 → ③말린 기억 + 현장 부인 → ④목격자 없음 → ⑤조서 왜곡 → ⑥공모 아님 → ⑦민사 동기</p>
   <p>- 민사 서류 이상한 점은 마지막에 간단히만 언급</p>
   <p>- 조서 왜곡 부분은 감정 없이 사실만 말할 것</p>
   <p>- 조경호 "것 같다" 변경 → 서류에서는 안 꺼냄, 증인신문용 카드로 보관</p>
