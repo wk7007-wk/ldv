@@ -65,6 +65,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 .edit-bar .cancel-btn{background:#333;color:#aaa;display:none}
 .doc-edit{display:none;width:100%;min-height:400px;font-family:'D2Coding','Consolas',monospace;font-size:13px;line-height:1.7;color:#d0d0d0;background:#12122a;border:1px solid #7C6FE0;border-radius:12px;padding:24px;resize:vertical;outline:none}
 .save-msg{font-size:11px;color:#4caf50;margin-left:8px;opacity:0;transition:opacity .3s}
+.tab.memo{color:#ffb74d}
+.tab.memo.active{color:#ffb74d;border-bottom-color:#ffb74d;background:#1a1810}
+.memo-hint{font-size:11px;color:#ffb74d;background:#1a1810;border:1px solid #4a3a1a;border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6}
 
 /* 임시개방 모달 */
 .modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
@@ -299,11 +302,14 @@ function renderTabs(){
     '개선_04_모두진술문':'모두진술',
     '종합분석_개선판':'종합분석',
     '검토_쟁점정리':'쟁점정리',
-    '기존_사건분석_전략':'기존분석'
+    '기존_사건분석_전략':'기존분석',
+    'memo_claude':'메모'
   };
-  document.getElementById('tabs').innerHTML=keys.map(k=>
-    `<div class="tab${k===currentTab?' active':''}" onclick="selectTab('${k}')">${labels[k]||k}</div>`
-  ).join('');
+  const memoKeys=['memo_claude'];
+  document.getElementById('tabs').innerHTML=keys.map(k=>{
+    const isMemo=memoKeys.includes(k);
+    return `<div class="tab${k===currentTab?' active':''}${isMemo?' memo':''}" onclick="selectTab('${k}')">${labels[k]||k}</div>`;
+  }).join('');
 }
 
 function selectTab(k){
@@ -319,7 +325,9 @@ function selectTab(k){
     <button class="save-btn" id="saveBtn" onclick="saveDoc()">저장</button>
     <button class="edit-btn" id="editBtn" onclick="startEdit()">편집</button>
   </div>`;
-  document.getElementById('content').innerHTML=updated+editBar+
+  const memoHint=currentTab==='memo_claude'?
+    '<div class="memo-hint">사실관계 수정, 추가 정보, 클로드에게 할 말을 자유롭게 적어주세요.<br>저장 후 "확인해줘" 또는 "정제해줘" 하면 반영합니다.</div>':'';
+  document.getElementById('content').innerHTML=updated+memoHint+editBar+
     '<div class="doc" id="docView">'+rendered+'</div>'+
     '<textarea class="doc-edit" id="docEdit"></textarea>';
 }
