@@ -57,6 +57,15 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 .updated{font-size:11px;color:#555;text-align:right;margin-bottom:8px}
 .loading{text-align:center;padding:60px;color:#555}
 
+/* 편집 모드 */
+.edit-bar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
+.edit-bar button{padding:6px 16px;border:none;border-radius:6px;font-size:12px;cursor:pointer}
+.edit-bar .edit-btn{background:#2a2a4a;color:#7C6FE0;border:1px solid #7C6FE0}
+.edit-bar .save-btn{background:#4caf50;color:#fff;display:none}
+.edit-bar .cancel-btn{background:#333;color:#aaa;display:none}
+.doc-edit{display:none;width:100%;min-height:400px;font-family:'D2Coding','Consolas',monospace;font-size:13px;line-height:1.7;color:#d0d0d0;background:#12122a;border:1px solid #7C6FE0;border-radius:12px;padding:24px;resize:vertical;outline:none}
+.save-msg{font-size:11px;color:#4caf50;margin-left:8px;opacity:0;transition:opacity .3s}
+
 /* 임시개방 모달 */
 .modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
 .modal-bg.show{display:flex}
@@ -304,7 +313,15 @@ function selectTab(k){
   if(!d){document.getElementById('content').innerHTML='';return;}
   const updated=d.updated?`<div class="updated">업데이트: ${d.updated}</div>`:'';
   const rendered=renderMarkdown(d.content||'');
-  document.getElementById('content').innerHTML=updated+'<div class="doc">'+rendered+'</div>';
+  const editBar=`<div class="edit-bar">
+    <span class="save-msg" id="saveMsg"></span>
+    <button class="cancel-btn" id="cancelBtn" onclick="cancelEdit()">취소</button>
+    <button class="save-btn" id="saveBtn" onclick="saveDoc()">저장</button>
+    <button class="edit-btn" id="editBtn" onclick="startEdit()">편집</button>
+  </div>`;
+  document.getElementById('content').innerHTML=updated+editBar+
+    '<div class="doc" id="docView">'+rendered+'</div>'+
+    '<textarea class="doc-edit" id="docEdit"></textarea>';
 }
 
 function renderMarkdown(text){
@@ -335,6 +352,48 @@ function renderMarkdown(text){
 
 function escapeHtml(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// 편집 기능
+function startEdit(){
+  const d=docs[currentTab];
+  if(!d)return;
+  document.getElementById('docView').style.display='none';
+  document.getElementById('docEdit').style.display='block';
+  document.getElementById('docEdit').value=d.content||'';
+  document.getElementById('editBtn').style.display='none';
+  document.getElementById('saveBtn').style.display='inline-block';
+  document.getElementById('cancelBtn').style.display='inline-block';
+  document.getElementById('docEdit').focus();
+}
+
+function cancelEdit(){
+  document.getElementById('docView').style.display='block';
+  document.getElementById('docEdit').style.display='none';
+  document.getElementById('editBtn').style.display='inline-block';
+  document.getElementById('saveBtn').style.display='none';
+  document.getElementById('cancelBtn').style.display='none';
+}
+
+function saveDoc(){
+  const content=document.getElementById('docEdit').value;
+  const now=new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\. /g,'-').replace('.','');
+  const safeKey=encodeURIComponent(currentTab);
+  fetch(FB+'/packhelper/legal/docs/'+safeKey+'.json',{
+    method:'PUT',
+    body:JSON.stringify({content:content,updated:now})
+  }).then(r=>r.json()).then(()=>{
+    docs[currentTab]={content:content,updated:now};
+    // 렌더링 업데이트
+    document.getElementById('docView').innerHTML=renderMarkdown(content);
+    cancelEdit();
+    const msg=document.getElementById('saveMsg');
+    msg.textContent='저장 완료';
+    msg.style.opacity='1';
+    setTimeout(()=>{msg.style.opacity='0';},2000);
+  }).catch(()=>{
+    alert('저장 실패');
+  });
 }
 
 // 시작
