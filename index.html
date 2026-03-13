@@ -69,6 +69,18 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 .tab.memo.active{color:#ffb74d;border-bottom-color:#ffb74d;background:#1a1810}
 .memo-hint{font-size:11px;color:#ffb74d;background:#1a1810;border:1px solid #4a3a1a;border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6}
 
+/* 증거 카드 */
+.ev-card{background:#16162a;border:1px solid #2a2a4a;border-radius:10px;padding:12px 14px;margin:8px 0}
+.ev-card.card-deny{border-left:3px solid #ef5350}
+.ev-card.card-ok{border-left:3px solid #4caf50}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.card-num{background:#2a2a4a;color:#7C6FE0;font-weight:700;font-size:12px;padding:2px 8px;border-radius:4px;min-width:24px;text-align:center}
+.card-name{color:#e0e0e0;font-size:13px;flex:1}
+.card-opinion{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.card-deny .card-opinion{background:#4a1a1a;color:#ef5350}
+.card-ok .card-opinion{background:#1a3a1a;color:#4caf50}
+.card-reason{color:#999;font-size:12px;line-height:1.5;margin-top:6px;padding-top:6px;border-top:1px solid #2a2a4a}
+
 /* 임시개방 모달 */
 .modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
 .modal-bg.show{display:flex}
@@ -354,6 +366,8 @@ function selectTab(k){
 }
 
 function renderMarkdown(text){
+  // 박스 문자 테이블 → 카드형 변환 (먼저 처리)
+  text=parseBoxTable(text);
   let html=escapeHtml(text);
   html=html.replace(/^### (.+)$/gm,'<div class="h3">$1</div>');
   html=html.replace(/^## (.+)$/gm,'<div class="h2">$1</div>');
@@ -361,6 +375,7 @@ function renderMarkdown(text){
   html=html.replace(/\*\*(.+?)\*\*/g,'<span class="bold">$1</span>');
   html=html.replace(/```([\s\S]*?)```/g,'<div class="code">$1</div>');
   html=html.replace(/`([^`]+)`/g,'<code style="background:#1e1e3a;padding:2px 6px;border-radius:4px">$1</code>');
+  // 마크다운 | 테이블
   html=html.replace(/((?:\|.+\|\n?)+)/g,function(m){
     const rows=m.trim().split('\n').filter(r=>r.trim());
     if(rows.length<2)return m;
@@ -374,9 +389,74 @@ function renderMarkdown(text){
     t+='</table></div>';
     return t;
   });
+  // [CARD:...] 플레이스홀더 복원
+  html=html.replace(/\[CARD:(\d+):(\w+):(.*?):([\s\S]*?)\]/g,function(_,num,opinion,name,reason){
+    const cls=opinion==='부동의'?'card-deny':'card-ok';
+    const reasonHtml=reason.trim()?'<div class="card-reason">'+reason.trim()+'</div>':'';
+    return '<div class="ev-card '+cls+'"><div class="card-head"><span class="card-num">'+num+'</span><span class="card-name">'+name.trim()+'</span><span class="card-opinion">'+opinion+'</span></div>'+reasonHtml+'</div>';
+  });
   html=html.replace(/^&gt; (.+)$/gm,'<div class="highlight">$1</div>');
   html=html.replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #2a2a4a;margin:16px 0">');
   return html;
+}
+
+function parseBoxTable(text){
+  const lines=text.split('\n');
+  const hasBox=lines.some(l=>/[┌┬┐├┼┤└┴┘│─]/.test(l));
+  if(!hasBox)return text;
+  let result=[];
+  let inTable=false;
+  let cells=[];
+  let currentCell=[];
+  let cellMeta={num:'',name:'',opinion:''};
+  for(let i=0;i<lines.length;i++){
+    const l=lines[i];
+    if(/^[┌├└╔╠╚]/.test(l)||/^[\s]*[┌├└]/.test(l)){
+      // 구분선: 이전 셀 저장
+      if(currentCell.length&&cellMeta.num){
+        const reason=currentCell.join('\n').trim();
+        result.push('[CARD:'+cellMeta.num+':'+cellMeta.opinion+':'+cellMeta.name+':'+reason+']');
+        currentCell=[];cellMeta={num:'',name:'',opinion:''};
+      }
+      inTable=true;
+      continue;
+    }
+    if(inTable&&/│/.test(l)){
+      const parts=l.split('│').map(s=>s.trim()).filter(s=>s!=='');
+      if(parts.length>=3&&/^\d+$/.test(parts[0])){
+        // 새 행 시작
+        if(currentCell.length&&cellMeta.num){
+          const reason=currentCell.join('\n').trim();
+          result.push('[CARD:'+cellMeta.num+':'+cellMeta.opinion+':'+cellMeta.name+':'+reason+']');
+          currentCell=[];
+        }
+        cellMeta.num=parts[0];
+        cellMeta.name=parts[1];
+        cellMeta.opinion=parts[2];
+        if(parts[3])currentCell.push(parts[3]);
+      } else if(parts.length>=1&&cellMeta.num){
+        // 부동의 사유 연속 행
+        const reason=parts[parts.length-1]||parts[0]||'';
+        if(reason&&reason!==cellMeta.opinion&&reason!==cellMeta.name)currentCell.push(reason);
+      }
+      continue;
+    }
+    if(inTable&&!/│/.test(l)&&!/[┌┬┐├┼┤└┴┘]/.test(l)){
+      // 테이블 끝
+      if(currentCell.length&&cellMeta.num){
+        const reason=currentCell.join('\n').trim();
+        result.push('[CARD:'+cellMeta.num+':'+cellMeta.opinion+':'+cellMeta.name+':'+reason+']');
+        currentCell=[];cellMeta={num:'',name:'',opinion:''};
+      }
+      inTable=false;
+    }
+    if(!inTable)result.push(l);
+  }
+  if(currentCell.length&&cellMeta.num){
+    const reason=currentCell.join('\n').trim();
+    result.push('[CARD:'+cellMeta.num+':'+cellMeta.opinion+':'+cellMeta.name+':'+reason+']');
+  }
+  return result.join('\n');
 }
 
 function escapeHtml(s){
