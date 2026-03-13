@@ -15,14 +15,25 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 .lock-box input{width:100%;padding:12px 16px;border:1px solid #333;border-radius:8px;background:#0f0f1a;color:#fff;font-size:16px;text-align:center;letter-spacing:4px;outline:none}
 .lock-box input:focus{border-color:#7C6FE0}
 .lock-box .err{color:#ef5350;font-size:12px;margin-top:8px;min-height:18px}
+.lock-box .info{color:#4caf50;font-size:12px;margin-top:4px;min-height:18px}
 .lock-box button{margin-top:16px;padding:10px 32px;background:#7C6FE0;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer}
+
+/* 차단 */
+.blocked{display:none;align-items:center;justify-content:center;min-height:100vh;background:#0a0a0f}
+.blocked-box{background:#1a1020;border:1px solid #4a2040;border-radius:16px;padding:40px;text-align:center;width:320px}
+.blocked-box h2{color:#ef5350;margin-bottom:12px;font-size:18px}
+.blocked-box p{color:#888;font-size:13px}
 
 /* 메인 */
 .app{display:none}
 .header{background:#16162a;border-bottom:1px solid #2a2a4a;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .header h1{font-size:16px;color:#7C6FE0}
-.header .logout{font-size:12px;color:#666;cursor:pointer;padding:6px 12px;border:1px solid #333;border-radius:6px}
-.header .logout:hover{border-color:#ef5350;color:#ef5350}
+.header-right{display:flex;gap:8px;align-items:center}
+.header .btn{font-size:12px;color:#666;cursor:pointer;padding:6px 12px;border:1px solid #333;border-radius:6px}
+.header .btn:hover{border-color:#7C6FE0;color:#7C6FE0}
+.header .btn.danger:hover{border-color:#ef5350;color:#ef5350}
+.header .btn.active{border-color:#4caf50;color:#4caf50}
+.ip-info{font-size:10px;color:#444;margin-right:8px}
 
 /* 탭 */
 .tabs{display:flex;gap:0;background:#12122a;border-bottom:1px solid #2a2a4a;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -46,6 +57,16 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 .updated{font-size:11px;color:#555;text-align:right;margin-bottom:8px}
 .loading{text-align:center;padding:60px;color:#555}
 
+/* 임시개방 모달 */
+.modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:#16162a;border:1px solid #2a2a4a;border-radius:12px;padding:24px;width:280px;text-align:center}
+.modal h3{color:#7C6FE0;margin-bottom:12px;font-size:15px}
+.modal p{color:#888;font-size:12px;margin-bottom:16px}
+.modal button{padding:8px 20px;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin:0 4px}
+.modal .confirm{background:#4caf50;color:#fff}
+.modal .cancel{background:#333;color:#aaa}
+
 /* 인쇄 */
 @media print{
   .header,.tabs,.logout{display:none!important}
@@ -56,12 +77,22 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 </head>
 <body>
 
+<!-- 차단 화면 -->
+<div class="blocked" id="blockedScreen">
+  <div class="blocked-box">
+    <h2>접근 제한</h2>
+    <p>등록되지 않은 환경입니다.</p>
+    <p id="blockedIp" style="color:#555;font-size:11px;margin-top:12px"></p>
+  </div>
+</div>
+
 <!-- 잠금 화면 -->
 <div class="lock-screen" id="lockScreen">
   <div class="lock-box">
     <h2>접근 코드 입력</h2>
     <input type="password" id="passInput" maxlength="20" placeholder="••••" autofocus>
     <div class="err" id="passErr"></div>
+    <div class="info" id="passInfo"></div>
     <button onclick="tryUnlock()">확인</button>
   </div>
 </div>
@@ -70,7 +101,11 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 <div class="app" id="app">
   <div class="header">
     <h1>사건 문서</h1>
-    <span class="logout" onclick="doLock()">잠금</span>
+    <div class="header-right">
+      <span class="ip-info" id="ipDisplay"></span>
+      <span class="btn" id="tempBtn" onclick="showTempModal()">임시개방</span>
+      <span class="btn danger" onclick="doLock()">잠금</span>
+    </div>
   </div>
   <div class="tabs" id="tabs"></div>
   <div class="content" id="content">
@@ -78,28 +113,101 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
   </div>
 </div>
 
+<!-- 임시개방 모달 -->
+<div class="modal-bg" id="tempModal">
+  <div class="modal">
+    <h3>임시 개방</h3>
+    <p>30분간 새 환경에서<br>접근코드로 등록 가능</p>
+    <button class="confirm" onclick="enableTempOpen()">개방</button>
+    <button class="cancel" onclick="closeTempModal()">취소</button>
+  </div>
+</div>
+
 <script>
 const FB='https://poskds-4ba60-default-rtdb.asia-southeast1.firebasedatabase.app';
-// 해시 기반 비밀번호 검증 (평문 저장 안 함)
-const PASS_HASH='a3c9e2f1'; // 간단 해시
+let myIp='';
 let docs={};
 let currentTab='';
 
-function simpleHash(s){
-  let h=0;
-  for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}
-  return (h>>>0).toString(16).slice(0,8);
+// IP 가져오기
+async function getMyIp(){
+  try{
+    const r=await fetch('https://api.ipify.org?format=json');
+    const d=await r.json();
+    return d.ip;
+  }catch(e){
+    try{
+      const r2=await fetch('https://httpbin.org/ip');
+      const d2=await r2.json();
+      return d2.origin;
+    }catch(e2){return null;}
+  }
+}
+
+// IP 체크 → 허용 여부 판단
+async function checkIpAccess(){
+  myIp=await getMyIp();
+  if(!myIp){
+    // IP 확인 실패시 접근코드만으로 진행
+    showLockScreen();
+    return;
+  }
+
+  // Firebase에서 허용 IP 목록 + 임시개방 상태 확인
+  const [ipsRes,tempRes]=await Promise.all([
+    fetch(FB+'/packhelper/legal/allowed_ips.json').then(r=>r.json()).catch(()=>null),
+    fetch(FB+'/packhelper/legal/temp_open.json').then(r=>r.json()).catch(()=>null)
+  ]);
+
+  const allowedIps=ipsRes||{};
+  const ipList=Object.values(allowedIps);
+
+  // IP가 허용 목록에 있으면 통과
+  if(ipList.includes(myIp)){
+    showLockScreen();
+    return;
+  }
+
+  // 임시개방 중이면 통과 (접근코드 입력 시 IP 자동 등록)
+  if(tempRes&&tempRes.until){
+    const until=new Date(tempRes.until).getTime();
+    if(Date.now()<until){
+      showLockScreen(true); // 임시개방 모드로 잠금화면
+      return;
+    }
+  }
+
+  // 허용 목록도 없고 임시개방도 아닌데, 아직 아무도 등록 안 한 경우
+  if(ipList.length===0){
+    showLockScreen(true); // 최초 등록 허용
+    return;
+  }
+
+  // 차단
+  document.getElementById('blockedScreen').style.display='flex';
+  document.getElementById('lockScreen').style.display='none';
+  document.getElementById('blockedIp').textContent=myIp;
+}
+
+function showLockScreen(isNewDevice){
+  document.getElementById('lockScreen').style.display='flex';
+  document.getElementById('blockedScreen').style.display='none';
+  if(isNewDevice){
+    document.getElementById('passInfo').textContent='새 환경 — 코드 입력 시 자동 등록';
+  }
 }
 
 function tryUnlock(){
   const v=document.getElementById('passInput').value;
   if(!v){document.getElementById('passErr').textContent='코드를 입력하세요';return;}
-  // Firebase에서 비밀번호 확인
   fetch(FB+'/packhelper/legal/access_code.json').then(r=>r.json()).then(code=>{
     if(v===code){
       sessionStorage.setItem('legal_auth','1');
+      // IP 등록
+      if(myIp){registerIp(myIp);}
       document.getElementById('lockScreen').style.display='none';
       document.getElementById('app').style.display='block';
+      if(myIp){document.getElementById('ipDisplay').textContent=myIp;}
       loadDocs();
     } else {
       document.getElementById('passErr').textContent='코드가 틀렸습니다';
@@ -108,6 +216,14 @@ function tryUnlock(){
   }).catch(()=>{
     document.getElementById('passErr').textContent='서버 연결 실패';
   });
+}
+
+function registerIp(ip){
+  const safe=ip.replace(/\./g,'_');
+  fetch(FB+'/packhelper/legal/allowed_ips/'+safe+'.json',{
+    method:'PUT',
+    body:JSON.stringify(ip)
+  }).catch(()=>{});
 }
 
 document.getElementById('passInput').addEventListener('keydown',e=>{
@@ -120,6 +236,38 @@ function doLock(){
   document.getElementById('lockScreen').style.display='flex';
   document.getElementById('passInput').value='';
   document.getElementById('passErr').textContent='';
+  document.getElementById('passInfo').textContent='';
+}
+
+// 임시개방
+function showTempModal(){document.getElementById('tempModal').classList.add('show');}
+function closeTempModal(){document.getElementById('tempModal').classList.remove('show');}
+function enableTempOpen(){
+  const until=new Date(Date.now()+30*60*1000).toISOString();
+  fetch(FB+'/packhelper/legal/temp_open.json',{
+    method:'PUT',
+    body:JSON.stringify({until:until,by:myIp})
+  }).then(()=>{
+    closeTempModal();
+    const btn=document.getElementById('tempBtn');
+    btn.textContent='개방중 (30분)';
+    btn.classList.add('active');
+    setTimeout(()=>{btn.textContent='임시개방';btn.classList.remove('active');},30*60*1000);
+  });
+}
+
+// 임시개방 상태 표시
+async function checkTempStatus(){
+  try{
+    const r=await fetch(FB+'/packhelper/legal/temp_open.json');
+    const d=await r.json();
+    if(d&&d.until&&new Date(d.until).getTime()>Date.now()){
+      const btn=document.getElementById('tempBtn');
+      const left=Math.round((new Date(d.until).getTime()-Date.now())/60000);
+      btn.textContent='개방중 ('+left+'분)';
+      btn.classList.add('active');
+    }
+  }catch(e){}
 }
 
 function loadDocs(){
@@ -130,6 +278,7 @@ function loadDocs(){
     const keys=Object.keys(docs).sort();
     if(keys.length)selectTab(keys[0]);
   });
+  checkTempStatus();
 }
 
 function renderTabs(){
@@ -140,6 +289,7 @@ function renderTabs(){
     '개선_03_증거신청서':'증거신청서',
     '개선_04_모두진술문':'모두진술',
     '종합분석_개선판':'종합분석',
+    '검토_쟁점정리':'쟁점정리',
     '기존_사건분석_전략':'기존분석'
   };
   document.getElementById('tabs').innerHTML=keys.map(k=>
@@ -158,30 +308,19 @@ function selectTab(k){
 }
 
 function renderMarkdown(text){
-  // 간단한 마크다운 렌더링
   let html=escapeHtml(text);
-
-  // 헤더
   html=html.replace(/^### (.+)$/gm,'<div class="h3">$1</div>');
   html=html.replace(/^## (.+)$/gm,'<div class="h2">$1</div>');
   html=html.replace(/^# (.+)$/gm,'<div class="h1">$1</div>');
-
-  // 볼드
   html=html.replace(/\*\*(.+?)\*\*/g,'<span class="bold">$1</span>');
-
-  // 코드 블록
   html=html.replace(/```([\s\S]*?)```/g,'<div class="code">$1</div>');
-
-  // 인라인 코드
   html=html.replace(/`([^`]+)`/g,'<code style="background:#1e1e3a;padding:2px 6px;border-radius:4px">$1</code>');
-
-  // 테이블 (마크다운 테이블 → HTML)
   html=html.replace(/((?:\|.+\|\n?)+)/g,function(m){
     const rows=m.trim().split('\n').filter(r=>r.trim());
     if(rows.length<2)return m;
     let t='<div class="table-wrap"><table>';
     rows.forEach((row,i)=>{
-      if(row.match(/^\|[\s\-:|]+\|$/))return; // 구분선 스킵
+      if(row.match(/^\|[\s\-:|]+\|$/))return;
       const cells=row.split('|').filter(c=>c.trim()!=='');
       const tag=i===0?'th':'td';
       t+='<tr>'+cells.map(c=>`<${tag}>${c.trim()}</${tag}>`).join('')+'</tr>';
@@ -189,13 +328,8 @@ function renderMarkdown(text){
     t+='</table></div>';
     return t;
   });
-
-  // > 인용
   html=html.replace(/^&gt; (.+)$/gm,'<div class="highlight">$1</div>');
-
-  // --- 구분선
   html=html.replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #2a2a4a;margin:16px 0">');
-
   return html;
 }
 
@@ -203,11 +337,29 @@ function escapeHtml(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// 자동 로그인 체크
+// 시작
 if(sessionStorage.getItem('legal_auth')==='1'){
-  document.getElementById('lockScreen').style.display='none';
-  document.getElementById('app').style.display='block';
-  loadDocs();
+  // 이미 인증된 세션 — IP 체크 후 진행
+  (async()=>{
+    myIp=await getMyIp();
+    if(myIp){
+      const ipsRes=await fetch(FB+'/packhelper/legal/allowed_ips.json').then(r=>r.json()).catch(()=>({}));
+      const ipList=Object.values(ipsRes||{});
+      if(ipList.length>0&&!ipList.includes(myIp)){
+        sessionStorage.removeItem('legal_auth');
+        document.getElementById('blockedScreen').style.display='flex';
+        document.getElementById('lockScreen').style.display='none';
+        document.getElementById('blockedIp').textContent=myIp;
+        return;
+      }
+      document.getElementById('ipDisplay').textContent=myIp;
+    }
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    loadDocs();
+  })();
+} else {
+  checkIpAccess();
 }
 </script>
 </body>
