@@ -327,7 +327,7 @@ function selectTab(k){
     <button class="edit-btn" id="editBtn" onclick="startEdit()">편집</button>
   </div>`;
   const memoHint=currentTab==='memo_claude'?
-    '<div class="memo-hint">사실관계 수정, 추가 정보, 클로드에게 할 말을 자유롭게 적어주세요.<br>저장 후 "확인해줘" 또는 "정제해줘" 하면 반영합니다.</div>':'';
+    '<div class="memo-hint">사실관계 수정, 추가 정보, 클로드에게 할 말을 자유롭게 적어주세요.<br>기존 내용 아래에 이어서 작성 가능. 저장 후 "확인해줘" 하면 반영합니다.<br>처리된 건 [처리완료]로 표시됩니다.</div>':'';
   document.getElementById('content').innerHTML=updated+memoHint+editBar+
     '<div class="doc" id="docView">'+rendered+'</div>'+
     '<textarea class="doc-edit" id="docEdit"></textarea>';
