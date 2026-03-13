@@ -79,6 +79,27 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#0a0a0f;color
 .modal .confirm{background:#4caf50;color:#fff}
 .modal .cancel{background:#333;color:#aaa}
 
+/* 모바일 */
+@media (max-width:600px){
+  .header{padding:8px 12px}
+  .header h1{font-size:14px}
+  .tabs{gap:0}
+  .tab{padding:8px 10px;font-size:12px}
+  .content{padding:10px}
+  .doc{font-size:12px;line-height:1.6;padding:14px;border-radius:8px;word-break:keep-all}
+  .doc .h1{font-size:16px}
+  .doc .h2{font-size:14px}
+  .doc .h3{font-size:13px}
+  .doc table{font-size:11px}
+  .doc th,.doc td{padding:5px 6px}
+  .doc-edit{font-size:12px;padding:14px;min-height:300px}
+  .edit-bar{gap:6px}
+  .edit-bar button{padding:8px 14px;font-size:12px}
+  .memo-hint{font-size:10px;padding:8px 10px}
+  .lock-box{width:280px;padding:28px}
+  .blocked-box{width:280px;padding:28px}
+}
+
 /* 인쇄 */
 @media print{
   .header,.tabs,.logout{display:none!important}
