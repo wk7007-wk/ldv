@@ -303,9 +303,10 @@ function renderTabs(){
     '종합분석_개선판':'종합분석',
     '검토_쟁점정리':'쟁점정리',
     '기존_사건분석_전략':'기존분석',
-    'memo_claude':'메모'
+    'memo_claude':'메모',
+    'schedule_trial':'재판일정'
   };
-  const memoKeys=['memo_claude'];
+  const memoKeys=['memo_claude','schedule_trial'];
   document.getElementById('tabs').innerHTML=keys.map(k=>{
     const isMemo=memoKeys.includes(k);
     return `<div class="tab${k===currentTab?' active':''}${isMemo?' memo':''}" onclick="selectTab('${k}')">${labels[k]||k}</div>`;
