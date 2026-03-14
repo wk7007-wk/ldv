@@ -222,8 +222,8 @@ async function checkIpAccess(){
   }
 
   // 임시개방 중이면 통과 (접근코드 입력 시 IP 자동 등록)
-  if(tempRes&&tempRes.until){
-    const until=new Date(tempRes.until).getTime();
+  if(tempRes&&(tempRes.expires||tempRes.until)){
+    const until=tempRes.expires||new Date(tempRes.until).getTime();
     if(Date.now()<until){
       showLockScreen(true); // 임시개방 모드로 잠금화면
       return;
