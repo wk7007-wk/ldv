@@ -5,18 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>서류 인쇄</title>
 <style>
-body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
+body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; background: #0a0a0f; color: #e0e0e0; }
+.lock { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+.lock-box { background: #16162a; border: 1px solid #2a2a4a; border-radius: 16px; padding: 40px; text-align: center; width: 300px; }
+.lock-box input { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 8px; background: #0f0f1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; outline: none; }
+.lock-box input:focus { border-color: #7C6FE0; }
+.lock-box button { margin-top: 16px; padding: 10px 32px; background: #7C6FE0; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+.err { color: #ef5350; font-size: 12px; margin-top: 8px; min-height: 18px; }
+.main { display: none; }
 a { display: block; padding: 18px; margin: 12px 0; background: #2196F3; color: #fff; text-decoration: none; border-radius: 8px; text-align: center; font-size: 17px; }
 a:active { background: #1976D2; }
-p { color: #666; font-size: 14px; text-align: center; margin-top: 20px; }
+p { color: #888; font-size: 14px; text-align: center; margin-top: 20px; }
+h2 { text-align: center; }
 </style>
 </head>
 <body>
-<h2 style="text-align:center;">서류 인쇄</h2>
-<a href="print_증거의견서.html">1. 증거의견서</a>
-<a href="print_의견서.html">2. 의견서 (변론요지서)</a>
-<a href="print_모두진술문.html">3. 모두진술문 (본인 메모)</a>
-<a href="print_증거신청서.html">4. 증거신청서</a>
-<p>각 문서를 열고 브라우저 인쇄(Ctrl+P)로 출력하세요.<br>A4 용지에 맞게 설정되어 있습니다.</p>
+<div class="lock" id="lock">
+  <div class="lock-box">
+    <input type="password" id="pw" placeholder="비밀번호" maxlength="10" autofocus>
+    <div class="err" id="err"></div>
+    <button onclick="chk()">확인</button>
+  </div>
+</div>
+<div class="main" id="main">
+  <h2>서류 인쇄</h2>
+  <a href="print_증거의견서.html">1. 증거의견서</a>
+  <a href="print_의견서.html">2. 의견서 (변론요지서)</a>
+  <a href="print_모두진술문.html">3. 모두진술문</a>
+  <a href="print_증거신청서.html">4. 증거신청서</a>
+  <p>각 문서를 열고 브라우저 인쇄(Ctrl+P)로 출력하세요.<br>A4 용지에 맞게 설정되어 있습니다.</p>
+</div>
+<script>
+var H='03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+function sha(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')})}
+function chk(){sha(document.getElementById('pw').value).then(function(h){if(h===H){sessionStorage.setItem('pa','1');document.getElementById('lock').style.display='none';document.getElementById('main').style.display='block'}else{document.getElementById('err').textContent='비밀번호가 틀립니다'}})}
+document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')chk()});
+if(sessionStorage.getItem('pa')==='1'){document.getElementById('lock').style.display='none';document.getElementById('main').style.display='block'}
+</script>
 </body>
 </html>
